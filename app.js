@@ -15,24 +15,24 @@
   const TOUR_PHASES = [
     ['接到线索', ['score', 'assign', 'follow']],
     ['完成试听', ['assess', 'trial']],
-    ['购课与交付', ['buy', 'submitLesson', 'approveLesson']],
-    ['反馈回到总部', ['viewReport', 'refer']]
+    ['购课与上课', ['buy', 'submitLesson', 'approveLesson']],
+    ['课后反馈', ['viewReport', 'refer']]
   ];
   const REFUND_PHASES = [['查看可退金额', ['approveLesson', 'requestRefund']], ['确认退款', ['approveRefund']]];
   const OVERDUE_PHASES = [['补跟进', ['follow']]];
   const TOUR_STEPS = {
-    score: ['家长想预约一节试听课', '总部先从家长的留言里判断试听意向，决定是否交给本地合伙人跟进。', '家长留言', (s) => '「' + s.lead.transcript + '」'],
-    assign: ['把线索交给同城合伙人', '这条线索被识别为高意向。总部按城市和资质匹配可提供服务的合伙人。', '待派线索', (s) => s.lead.city + ' · ' + s.intent.level + ' · ' + s.intent.score + ' / 100'],
-    follow: ['联系家长并约好试听', '合伙人收到线索后登记跟进和预约。总部能看到是否在派单后 48 小时内完成。', '本次跟进', (s) => s.partner.name + ' · ' + slaStatus(s).label],
-    assess: ['先了解孩子的口语水平', '家长查看模拟口语测评。测评结果会给出分级、练习建议和匹配的老师。', '已预约试听', (s) => '由 ' + s.partner.name + ' 协助安排'],
-    trial: ['确认家长已完成试听', '合伙人确认本次体验完成，家长可以决定是否购买课包。', '本次测评', (s) => s.assessment.level + ' · ' + s.assessment.teacher],
-    buy: ['试听满意，家长购买课包', '模拟购课后，课时款先冻结。总部确认一节课交付后，才解冻对应金额。', '演示课包', () => PACK.lessons + ' 节 · ' + amount(PACK.price)],
-    submitLesson: ['提交一节课的课堂记录', '合伙人提交课堂记录供总部复核，家长之后可以在成长报告里看到练习建议。', '课堂记录样本', () => '开口率 ' + LESSON_SAMPLE.speakingShare + '% · 纠错质量 ' + LESSON_SAMPLE.correctionQuality + ' / 5'],
-    approveLesson: ['总部确认课时交付', '复核通过后，账本解冻这一节课对应的金额，并保留可追溯的记录。', '当前课时款', (s) => amount(balances(s.order).frozen) + ' 冻结中 · 1 节课待复核'],
-    viewReport: ['家长收到孩子的成长报告', '报告把课堂观察变成练习建议。总部可以知道家长是否看过报告。', '课时款进度', (s) => '已确认 ' + s.order.approved + ' 节 · 已解冻 ' + amount(balances(s.order).released)],
-    refer: ['把体验分享给另一位家长', '生成演示邀请后，总部收到一条新线索，并能追溯它来自哪位合伙人。', '报告中的练习建议', () => LESSON_SAMPLE.practice],
-    requestRefund: ['家长申请退回未上课时款', '已确认上完的课时照常结算，剩余冻结款可以提交总部复核。', '本次可退', (s) => amount(balances(s.order).frozen)],
-    approveRefund: ['总部复核退款金额', '复核通过后，模拟账本退回剩余冻结款，并记录这笔退款对应的订单。', '待复核金额', (s) => amount(balances(s.order).frozen)]
+    score: ['先读家长的留言', '家长提到了试听，还给了一个方便的时间。总部先给这条留言评分。', '家长留言', (s) => '「' + s.lead.transcript + '」'],
+    assign: ['找一位同城合伙人', '这位家长想约试听。系统会从同城、已通过培训认证的合伙人里找一位接手。', '这条线索', (s) => s.lead.city + ' · ' + s.intent.level + ' · ' + s.intent.score + ' / 100'],
+    follow: ['联系家长，约个时间', '约好试听后记一笔，总部就能看到有没有在两天内联系上家长。', '负责跟进', (s) => s.partner.name + ' · ' + slaStatus(s).label],
+    assess: ['试听前，先做口语测评', '家长可以先看看孩子的口语水平和推荐老师。这一步用的是测评样例。', '试听由谁安排', (s) => s.partner.name],
+    trial: ['试听课上完了', '合伙人登记完课，家长就可以决定要不要买课。', '测评和推荐老师', (s) => s.assessment.level + ' · ' + s.assessment.teacher],
+    buy: ['家长决定买课', '演示里的课时费先冻结。每确认上完一节，就解冻这一节的钱。', '演示课包', () => PACK.lessons + ' 节 · ' + amount(PACK.price)],
+    submitLesson: ['交一份课堂记录', '合伙人把课堂情况交给总部复核。这些记录也会出现在家长的报告里。', '课堂记录样例', () => '开口率 ' + LESSON_SAMPLE.speakingShare + '% · 纠错质量 ' + LESSON_SAMPLE.correctionQuality + ' / 5'],
+    approveLesson: ['核对这节课是否上完', '总部确认后，系统会记下这节课并解冻对应的课时费。', '当前课时费', (s) => amount(balances(s.order).frozen) + ' 冻结中 · 1 节课待复核'],
+    viewReport: ['看看孩子课上表现', '家长打开报告，就能看到课堂记录和回家可以做的练习。', '已经结了多少课时费', (s) => s.order.approved + ' 节 · ' + amount(balances(s.order).released)],
+    refer: ['把试听介绍给朋友', '生成邀请后，总部会收到一条新的试听线索，知道它是从哪位合伙人这边来的。', '报告里的练习建议', () => LESSON_SAMPLE.practice],
+    requestRefund: ['家长想退剩下的课', '上完的课照常结算。家长先看还能退多少，再提交申请。', '本次可退', (s) => amount(balances(s.order).frozen)],
+    approveRefund: ['核对还没上的课', '总部确认退款金额后，模拟账本会把这笔钱记到原订单上。', '待复核金额', (s) => amount(balances(s.order).frozen)]
   };
   const money = new Intl.NumberFormat('zh-CN', { style: 'currency', currency: 'CNY' });
   const date = new Intl.DateTimeFormat('zh-CN', {
@@ -234,10 +234,10 @@
 
   function tourResult(refund, overdue) {
     const totals = balances(state.order);
-    if (overdue) return ['超时线索已补跟', '合伙人已经预约试听。总部仍保留这次超时记录，可以追踪服务时效。', '48h 内跟进 · 0 / 1'];
-    if (state.order?.refund === 'approved') return ['未上课时款已退回', '总部复核后更新了模拟账本。已经完成的课时保留原结算记录。', '已退款 ' + amount(totals.refunded)];
-    if (refund) return ['当前订单没有可退余额', '重开课后退款场景，可以体验有余额时的退款流程。', '可退 ' + amount(totals.frozen)];
-    return ['一条线索走完了服务闭环', '总部能看到从派单、试听到交付的进度。家长的转介绍回到了总部，可以开启下一次服务。', '1 条转介绍线索已回流'];
+    if (overdue) return ['试听约上了，这次还是算超时', '合伙人后来联系上了家长，总部可以查到约课时间和之前的超时记录。', '两天内跟进 · 0 / 1'];
+    if (state.order?.refund === 'approved') return ['没上的课已经退了', '总部确认了退款。已经上完的课照常结算，退款也记在同一个订单里。', '已退款 ' + amount(totals.refunded)];
+    if (refund) return ['这个订单已经没有可退余额', '点「重新体验」，可以从只上完一节课时开始。', '可退 ' + amount(totals.frozen)];
+    return ['总部又收到一条试听线索', '这次是家长推荐来的。之前的预约、上课和结算记录也都能在工作台里查到。', '新增 1 条转介绍线索'];
   }
 
   function renderTour() {
@@ -257,17 +257,14 @@
     const [title, description, evidence] = step ? [step[0], step[1], step[3](state)] : tourResult(refund, overdue);
     const caption = step ? step[2] : '演示结果';
     const actor = next && ACTIONS[next].role;
-    const latest = state.events.at(-1);
     $('#tour-stage').innerHTML = `<article class="tour-card">
       <div class="tour-copy">
-        <p class="role-badge">${actor ? `<b>${actor}</b> 当前角色 · ${ACTORS[actor]}` : '<b aria-hidden="true">✓</b> 本场景已结束'}</p>
+        <p class="role-badge">${actor ? ACTORS[actor] : '演示结束'}</p>
         <h1 id="tour-title" tabindex="-1">${title}</h1>
         <p>${description}</p>
         ${next ? action(next) : '<button class="button primary" id="tour-restart" type="button">重新体验</button>'}
       </div>
-      <aside class="case-slip"><p class="label">${caption}</p><strong>${escape(evidence)}</strong>
-        <p class="case-update">${escape(latest.label)}</p>
-      </aside>
+      <aside class="case-slip"><p class="label">${caption}</p><strong>${escape(evidence)}</strong></aside>
     </article>`;
   }
 

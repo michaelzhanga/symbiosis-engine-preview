@@ -3,11 +3,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="跟着一条试听线索，体验说客英语方案中的总部派单、本地服务与家长反馈。">
+  <meta name="description" content="从家长的一条留言开始，看看说客英语方案怎么安排试听、记录上课和处理退款。">
   <title>共生引擎 · 三端技术演示</title>
-  <link rel="stylesheet" href="./styles.css?v=2">
+  <link rel="stylesheet" href="./styles.css?v=3">
   <script defer src="./engine.js"></script>
-  <script defer src="./app.js?v=2"></script>
+  <script defer src="./app.js?v=3"></script>
 </head>
 <body>
   <a class="skip-link" href="#main">跳到主要内容</a>
@@ -15,7 +15,7 @@
     <div class="site-bar">
       <button class="brand home-link" id="home-link" type="button" aria-label="共生引擎演示首页">
         <svg viewBox="0 0 36 36" aria-hidden="true"><rect width="36" height="36" rx="10" fill="currentColor"/><path d="M9 22l9-9 9 9M18 13v13" fill="none" stroke="#102621" stroke-width="2"/><circle cx="9" cy="22" r="3" fill="#102621"/><circle cx="27" cy="22" r="3" fill="#102621"/><circle cx="18" cy="12" r="3" fill="#102621"/></svg>
-        <span class="brand-name"><strong>共生引擎</strong><small>说客英语 · 竞赛原型</small></span>
+        <span class="brand-name"><strong>共生引擎</strong><small>说客英语参赛方案</small></span>
       </button>
       <button class="text-button" id="mode-link" type="button">打开工作台 <span aria-hidden="true">↗</span></button>
     </div>
@@ -24,28 +24,27 @@
     <section id="intro" class="presentation">
       <div class="intro-grid">
         <div class="intro-copy">
-          <p class="label">S2B2C 互动演示</p>
-          <h1 id="intro-title" tabindex="-1">一条试听线索，<br>怎样变成一次服务？</h1>
-          <p class="intro-description">家长想给孩子约一节英语试听课。跟着这条线索，体验总部如何派单、城市合伙人如何服务、家长如何购课并把反馈带回总部。</p>
+          <p class="intro-source">家长在公开课后留了一句话</p>
+          <h1 id="intro-title" tabindex="-1">「周六下午，<br>能约节试听课吗？」</h1>
+          <p class="intro-description">从总部收到留言开始，看看试听怎么约，买课后怎么结课时费，家长又能看到哪些课堂记录。</p>
           <div class="intro-action">
             <button class="button primary journey-button" type="button" data-scenario="standard"><span id="start-label">开始体验</span><span aria-hidden="true">→</span></button>
-            <span>约 2 分钟 · 全程模拟</span>
+            <span>约 2 分钟，使用模拟数据</span>
           </div>
         </div>
         <figure class="flow-board">
-          <figcaption><strong>一条线索的旅程</strong><span>业务流程</span></figcaption>
+          <figcaption>这条留言接下来交给谁</figcaption>
           <ol class="flow-actors">
-            <li><b>S</b><div><strong>总部</strong><span>识别意向，派给同城合伙人</span></div></li>
-            <li><b>B</b><div><strong>城市合伙人</strong><span>跟进预约，完成教学交付</span></div></li>
-            <li><b>C</b><div><strong>家长</strong><span>测评、购课，查看成长报告</span></div></li>
+            <li><strong>总部</strong><span>把留言转给同城的合伙人。</span></li>
+            <li><strong>城市合伙人</strong><span>联系家长，约好试听，登记上课情况。</span></li>
+            <li><strong>家长</strong><span>试听后决定要不要买课，上完课可以看孩子的练习建议。</span></li>
           </ol>
-          <p class="flow-return"><span aria-hidden="true">↳</span> 家长的转介绍回到总部，成为新线索。</p>
         </figure>
       </div>
       <div class="scenario-strip" aria-label="其他演示场景">
-        <p>也可以直接看</p>
-        <button class="text-button" type="button" data-scenario="overdue">48h 跟进超时 <span aria-hidden="true">↗</span></button>
-        <button class="text-button" type="button" data-scenario="refund">课后退款 <span aria-hidden="true">↗</span></button>
+        <p>另外两种情况</p>
+        <button class="text-button" type="button" data-scenario="overdue">两天没联系家长 <span aria-hidden="true">↗</span></button>
+        <button class="text-button" type="button" data-scenario="refund">上完一节课后想退款 <span aria-hidden="true">↗</span></button>
       </div>
     </section>
     <section id="tour" class="presentation tour" aria-label="引导演示" hidden>
@@ -55,7 +54,7 @@
       </div>
       <ol id="tour-phases" class="phases" aria-label="演示进度"></ol>
       <div id="tour-stage"></div>
-      <p class="tour-note">模拟场景 · 随步骤切换角色。可随时回首页或打开工作台。</p>
+      <p class="tour-note">想看这一步记下了什么，可以打开右上角的工作台。</p>
     </section>
     <div id="announcement" class="sr-only" role="status"></div>
     <div class="layout" id="workbench" hidden>
