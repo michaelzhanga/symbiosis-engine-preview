@@ -11,6 +11,29 @@
     B: ['合伙人工作台', 'CITY PARTNER', '接收本地线索，完成 48 小时跟进，将课堂记录提交总部复核。'],
     C: ['家长端', 'FAMILY', '从口语测评到成长报告，查看每一节课对应的资金进度。']
   };
+  const ACTORS = { S: '总部', B: '城市合伙人', C: '家长' };
+  const TOUR_PHASES = [
+    ['接到线索', ['score', 'assign', 'follow']],
+    ['完成试听', ['assess', 'trial']],
+    ['购课与交付', ['buy', 'submitLesson', 'approveLesson']],
+    ['反馈回到总部', ['viewReport', 'refer']]
+  ];
+  const REFUND_PHASES = [['查看可退金额', ['approveLesson', 'requestRefund']], ['确认退款', ['approveRefund']]];
+  const OVERDUE_PHASES = [['补跟进', ['follow']]];
+  const TOUR_STEPS = {
+    score: ['家长想预约一节试听课', '总部先从家长的留言里判断试听意向，决定是否交给本地合伙人跟进。', '家长留言', (s) => '「' + s.lead.transcript + '」'],
+    assign: ['把线索交给同城合伙人', '这条线索被识别为高意向。总部按城市和资质匹配可提供服务的合伙人。', '待派线索', (s) => s.lead.city + ' · ' + s.intent.level + ' · ' + s.intent.score + ' / 100'],
+    follow: ['联系家长并约好试听', '合伙人收到线索后登记跟进和预约。总部能看到是否在派单后 48 小时内完成。', '本次跟进', (s) => s.partner.name + ' · ' + slaStatus(s).label],
+    assess: ['先了解孩子的口语水平', '家长查看模拟口语测评。测评结果会给出分级、练习建议和匹配的老师。', '已预约试听', (s) => '由 ' + s.partner.name + ' 协助安排'],
+    trial: ['确认家长已完成试听', '合伙人确认本次体验完成，家长可以决定是否购买课包。', '本次测评', (s) => s.assessment.level + ' · ' + s.assessment.teacher],
+    buy: ['试听满意，家长购买课包', '模拟购课后，课时款先冻结。总部确认一节课交付后，才解冻对应金额。', '演示课包', () => PACK.lessons + ' 节 · ' + amount(PACK.price)],
+    submitLesson: ['提交一节课的课堂记录', '合伙人提交课堂记录供总部复核，家长之后可以在成长报告里看到练习建议。', '课堂记录样本', () => '开口率 ' + LESSON_SAMPLE.speakingShare + '% · 纠错质量 ' + LESSON_SAMPLE.correctionQuality + ' / 5'],
+    approveLesson: ['总部确认课时交付', '复核通过后，账本解冻这一节课对应的金额，并保留可追溯的记录。', '当前课时款', (s) => amount(balances(s.order).frozen) + ' 冻结中 · 1 节课待复核'],
+    viewReport: ['家长收到孩子的成长报告', '报告把课堂观察变成练习建议。总部可以知道家长是否看过报告。', '课时款进度', (s) => '已确认 ' + s.order.approved + ' 节 · 已解冻 ' + amount(balances(s.order).released)],
+    refer: ['把体验分享给另一位家长', '生成演示邀请后，总部收到一条新线索，并能追溯它来自哪位合伙人。', '报告中的练习建议', () => LESSON_SAMPLE.practice],
+    requestRefund: ['家长申请退回未上课时款', '已确认上完的课时照常结算，剩余冻结款可以提交总部复核。', '本次可退', (s) => amount(balances(s.order).frozen)],
+    approveRefund: ['总部复核退款金额', '复核通过后，模拟账本退回剩余冻结款，并记录这笔退款对应的订单。', '待复核金额', (s) => amount(balances(s.order).frozen)]
+  };
   const money = new Intl.NumberFormat('zh-CN', { style: 'currency', currency: 'CNY' });
   const date = new Intl.DateTimeFormat('zh-CN', {
     timeZone: 'Asia/Shanghai', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
@@ -40,6 +63,7 @@
   }
 
   let { state, role, journal } = restore();
+  let screen = 'intro';
 
   function persist() {
     try {
@@ -201,6 +225,70 @@
     )).join('');
   }
 
+  function tourStep() {
+    if (state.scenario === 'overdue') return ACTIONS.follow.allowed(state) ? 'follow' : null;
+    const next = nextStep(state);
+    if (state.scenario === 'refund' && !REFUND_PHASES.some(([, actions]) => actions.includes(next))) return null;
+    return next;
+  }
+
+  function tourResult(refund, overdue) {
+    const totals = balances(state.order);
+    if (overdue) return ['超时线索已补跟', '合伙人已经预约试听。总部仍保留这次超时记录，可以追踪服务时效。', '48h 内跟进 · 0 / 1'];
+    if (state.order?.refund === 'approved') return ['未上课时款已退回', '总部复核后更新了模拟账本。已经完成的课时保留原结算记录。', '已退款 ' + amount(totals.refunded)];
+    if (refund) return ['当前订单没有可退余额', '重开课后退款场景，可以体验有余额时的退款流程。', '可退 ' + amount(totals.frozen)];
+    return ['一条线索走完了服务闭环', '总部能看到从派单、试听到交付的进度。家长的转介绍回到了总部，可以开启下一次服务。', '1 条转介绍线索已回流'];
+  }
+
+  function renderTour() {
+    const next = tourStep();
+    const refund = state.scenario === 'refund' || Boolean(state.order?.refund);
+    const overdue = state.scenario === 'overdue';
+    const phases = overdue ? OVERDUE_PHASES : refund ? REFUND_PHASES : TOUR_PHASES;
+    const active = next ? phases.findIndex(([, actions]) => actions.includes(next)) : phases.length;
+    $('#tour-scenario').textContent = CASES[state.scenario].label;
+    $('#tour-phases').innerHTML = phases.map(([label], index) => (
+      `<li class="${index < active ? 'phase-done' : ''}" ${index === active ? 'aria-current="step"' : ''}>
+        <span aria-hidden="true">${index < active ? '✓' : '0' + (index + 1)}</span>${label}
+      </li>`
+    )).join('');
+
+    const step = next && TOUR_STEPS[next];
+    const [title, description, evidence] = step ? [step[0], step[1], step[3](state)] : tourResult(refund, overdue);
+    const caption = step ? step[2] : '演示结果';
+    const actor = next && ACTIONS[next].role;
+    const latest = state.events.at(-1);
+    $('#tour-stage').innerHTML = `<article class="tour-card">
+      <div class="tour-copy">
+        <p class="role-badge">${actor ? `<b>${actor}</b> 当前角色 · ${ACTORS[actor]}` : '<b aria-hidden="true">✓</b> 本场景已结束'}</p>
+        <h1 id="tour-title" tabindex="-1">${title}</h1>
+        <p>${description}</p>
+        ${next ? action(next) : '<button class="button primary" id="tour-restart" type="button">重新体验</button>'}
+      </div>
+      <aside class="case-slip"><p class="label">${caption}</p><strong>${escape(evidence)}</strong>
+        <p class="case-update">${escape(latest.label)}</p>
+      </aside>
+    </article>`;
+  }
+
+  function renderIntro() {
+    $('#start-label').textContent = state.scenario === 'standard' && journal.length && tourStep() ? '继续体验' : '开始体验';
+  }
+
+  function showScreen(next) {
+    screen = next;
+    $('#intro').hidden = screen !== 'intro';
+    $('#tour').hidden = screen !== 'tour';
+    $('#workbench').hidden = screen !== 'workbench';
+    $('#mode-link').textContent = screen === 'workbench' ? '返回引导演示 ←' : '打开工作台 ↗';
+    if (screen === 'intro') renderIntro();
+    if (screen === 'tour') renderTour();
+    if (screen === 'workbench') render();
+    const heading = { intro: '#intro-title', tour: '#tour-title', workbench: '#role-title' }[screen];
+    $(heading).focus({ preventScroll: true });
+    window.scrollTo(0, 0);
+  }
+
   function render(clearEvents = false) {
     const [name, kicker, description] = ROLES[role];
     $('#role-kicker').textContent = role + ' · ' + kicker;
@@ -226,9 +314,38 @@
     role = CASES[scenario].role;
     journal = [];
     persist();
-    render(true);
+    if (screen === 'workbench') render(true);
     $('#announcement').textContent = '已载入' + CASES[scenario].label + '场景';
   }
+
+  function performAction(actionId, actor) {
+    const updated = runAction(state, actionId, actor);
+    if (state === updated) return false;
+    state = updated;
+    role = actor;
+    journal.push(actionId);
+    persist();
+    $('#announcement').textContent = state.events.at(-1).label;
+    return true;
+  }
+
+  $('#home-link').addEventListener('click', () => showScreen('intro'));
+  $('#tour-back').addEventListener('click', () => showScreen('intro'));
+  $('#mode-link').addEventListener('click', () => showScreen(screen === 'workbench' ? 'tour' : 'workbench'));
+  $('#intro').addEventListener('click', (event) => {
+    const button = event.target.closest('[data-scenario]');
+    if (!button) return;
+    if (state.scenario !== button.dataset.scenario || !tourStep()) reset(button.dataset.scenario);
+    showScreen('tour');
+  });
+  $('#tour-stage').addEventListener('click', (event) => {
+    const restart = event.target.closest('#tour-restart');
+    const button = event.target.closest('[data-action]');
+    if (restart) reset(state.scenario);
+    else if (!button || !performAction(button.dataset.action, ACTIONS[button.dataset.action].role)) return;
+    renderTour();
+    $('#tour-title').focus({ preventScroll: true });
+  });
 
   $('#roles').addEventListener('click', (event) => {
     const button = event.target.closest('[data-role]');
@@ -244,25 +361,19 @@
     role = ACTIONS[next].role;
     persist();
     render();
-    $(`[data-action="${next}"]`)?.focus();
+    $(`#role-content [data-action="${next}"]`)?.focus();
   });
   $('#scenario').addEventListener('change', (event) => reset(event.target.value));
   $('#reset').addEventListener('click', () => reset(state.scenario));
   $('#role-content').addEventListener('click', (event) => {
     const button = event.target.closest('[data-action]');
     if (!button) return;
-    const actionId = button.dataset.action;
-    const updated = runAction(state, actionId, role);
-    if (state === updated) return;
-    state = updated;
-    journal.push(actionId);
-    persist();
+    if (!performAction(button.dataset.action, role)) return;
     render();
-    $('#announcement').textContent = state.events.at(-1).label;
     const next = nextStep(state);
-    const focus = next && ACTIONS[next].role === role ? $(`[data-action="${next}"]`) : next ? $('#jump') : $('#reset');
+    const focus = next && ACTIONS[next].role === role ? $(`#role-content [data-action="${next}"]`) : next ? $('#jump') : $('#reset');
     focus?.focus({ preventScroll: true });
   });
 
-  render();
+  renderIntro();
 })();

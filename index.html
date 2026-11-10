@@ -3,92 +3,125 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="共生引擎 S2B2C 三端联动技术演示。">
+  <meta name="description" content="跟着一条试听线索，体验说客英语方案中的总部派单、本地服务与家长反馈。">
   <title>共生引擎 · 三端技术演示</title>
   <link rel="stylesheet" href="./styles.css">
   <script defer src="./engine.js"></script>
   <script defer src="./app.js"></script>
 </head>
 <body>
-  <a class="skip-link" href="#main">跳到工作区</a>
-  <div class="layout">
-    <aside class="sidebar">
-      <div class="brand">
+  <a class="skip-link" href="#main">跳到主要内容</a>
+  <header class="site-header">
+    <div class="site-bar">
+      <button class="brand home-link" id="home-link" type="button" aria-label="共生引擎演示首页">
         <svg viewBox="0 0 36 36" aria-hidden="true"><rect width="36" height="36" rx="10" fill="currentColor"/><path d="M9 22l9-9 9 9M18 13v13" fill="none" stroke="#102621" stroke-width="2"/><circle cx="9" cy="22" r="3" fill="#102621"/><circle cx="27" cy="22" r="3" fill="#102621"/><circle cx="18" cy="12" r="3" fill="#102621"/></svg>
-        <div><strong>共生引擎</strong><span>S2B2C · 命题 03</span></div>
-      </div>
-      <div class="nav-caption">切换角色</div>
-      <nav id="roles" aria-label="切换演示角色">
-        <button type="button" data-role="S" aria-current="true"><b>S</b><span>总部驾驶舱<small>派单与运营</small></span></button>
-        <button type="button" data-role="B"><b>B</b><span>合伙人工作台<small>跟进与交付</small></span></button>
-        <button type="button" data-role="C"><b>C</b><span>家长端<small>学习与课时款</small></span></button>
-      </nav>
-      <div class="sidebar-bottom">
-        <div class="nav-caption">演示环境</div>
-        <p><span class="status-dot"></span>本地模拟沙盒</p>
-        <small>竞赛原型 / 团队评审</small>
-      </div>
-    </aside>
-    <main id="main" tabindex="-1">
-      <header class="toolbar">
-        <div class="breadcrumb">竞赛 Demo <span aria-hidden="true">/</span> 技术工作区</div>
-        <div class="controls">
-          <label for="scenario">场景</label>
-          <select id="scenario">
-            <option value="standard">完整链路</option>
-            <option value="overdue">48h 跟进超时</option>
-            <option value="refund">课后退款</option>
-          </select>
-          <button class="button secondary" type="button" id="reset">重置</button>
-        </div>
-      </header>
-      <div class="workspace">
-        <section class="hero" aria-labelledby="role-title">
-          <div>
-            <p class="eyebrow"><span class="status-dot"></span><span id="role-kicker">S · HEADQUARTERS</span></p>
-            <h1 id="role-title">总部驾驶舱</h1>
-            <p id="role-description">从一条线索开始，看城市合伙人和家长的服务数据如何回到总部。</p>
+        <span class="brand-name"><strong>共生引擎</strong><small>说客英语 · 竞赛原型</small></span>
+      </button>
+      <button class="text-button" id="mode-link" type="button">打开工作台 <span aria-hidden="true">↗</span></button>
+    </div>
+  </header>
+  <main id="main" tabindex="-1">
+    <section id="intro" class="presentation">
+      <div class="intro-grid">
+        <div class="intro-copy">
+          <p class="label">S2B2C 互动演示</p>
+          <h1 id="intro-title" tabindex="-1">一条试听线索，<br>怎样变成一次服务？</h1>
+          <p class="intro-description">家长想给孩子约一节英语试听课。跟着这条线索，体验总部如何派单、城市合伙人如何服务、家长如何购课并把反馈带回总部。</p>
+          <div class="intro-action">
+            <button class="button primary journey-button" type="button" data-scenario="standard"><span id="start-label">开始体验</span><span aria-hidden="true">→</span></button>
+            <span>约 2 分钟 · 全程模拟</span>
           </div>
-          <svg class="network" viewBox="0 0 360 128" aria-hidden="true">
-            <defs><pattern id="dotgrid" width="12" height="12" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="1" fill="#80aeaa" opacity=".29"/></pattern></defs>
-            <rect width="360" height="128" fill="url(#dotgrid)"/>
-            <path d="M78 68H179L282 68M282 80Q282 116 179 116T78 80" fill="none" stroke="#75d8b5" stroke-width="1.5" stroke-dasharray="4 5"/>
-            <path d="M130 65l4 3-4 3m106-6 4 3-4 3m-63 42-4 3 4 3" fill="none" stroke="#75d8b5" stroke-width="1.5"/>
-            <g transform="translate(78 68)"><circle r="25"/><text y="6">S</text><text class="node-label" y="-36">总部</text></g>
-            <g transform="translate(180 68)"><circle r="25"/><text y="6">B</text><text class="node-label" y="-36">合伙人</text></g>
-            <g transform="translate(282 68)"><circle r="25"/><text y="6">C</text><text class="node-label" y="-36">家长</text></g>
-          </svg>
-        </section>
-        <details class="quick-start card">
-          <summary>使用说明 · 第一次打开从这里开始</summary>
-          <p>共生引擎演示总部、城市合伙人和家长如何协作，把一条试听线索推进到购课、课时复核和转介绍。</p>
-          <ol class="steps">
-            <li>右上角选「完整链路」，从总部的「识别线索意向」开始。</li>
-            <li>按「演示引导」操作。出现「切换到该端」时，点击进入下一角色，再执行页面上的操作。展开「跨端事件流」可以查看每一步的记录。</li>
-            <li>想直接体验异常情况，可切换到「48h 跟进超时」或「课后退款」。点「重置」可重跑当前场景。</li>
-          </ol>
-          <p class="muted">本页使用模拟数据，测评和巡课为固定样本，购课和退款均为模拟操作。</p>
-        </details>
-        <section class="guide" aria-label="下一步演示操作">
-          <div><span class="guide-index">演示引导</span><strong id="guide-text"></strong></div>
-          <button class="button secondary" type="button" id="jump" hidden></button>
-        </section>
-        <div id="announcement" class="sr-only" role="status"></div>
-        <div class="work-grid">
-          <div id="role-content"></div>
-          <aside class="stream card" aria-labelledby="events-title">
-            <div class="section-head"><div><p class="kicker">EVENT STREAM</p><h2 id="events-title">跨端事件流</h2></div><span class="pill" id="event-count"></span></div>
-            <p class="muted stream-description">点击记录查看事件 ID、业务 ID 与字段。时钟为演示时间。</p>
-            <ol id="events" class="timeline"></ol>
-          </aside>
         </div>
-        <footer>
-          <span>命题 3 · 说客英语 S2B2C 方案 · 团队评审 Demo</span>
-          <span>演示样本、固定 AI 输出与模拟账本</span>
-        </footer>
+        <figure class="flow-board">
+          <figcaption><strong>一条线索的旅程</strong><span>业务流程</span></figcaption>
+          <ol class="flow-actors">
+            <li><b>S</b><div><strong>总部</strong><span>识别意向，派给同城合伙人</span></div></li>
+            <li><b>B</b><div><strong>城市合伙人</strong><span>跟进预约，完成教学交付</span></div></li>
+            <li><b>C</b><div><strong>家长</strong><span>测评、购课，查看成长报告</span></div></li>
+          </ol>
+          <p class="flow-return"><span aria-hidden="true">↳</span> 家长的转介绍回到总部，成为新线索。</p>
+        </figure>
       </div>
-    </main>
-  </div>
+      <div class="scenario-strip" aria-label="其他演示场景">
+        <p>也可以直接看</p>
+        <button class="text-button" type="button" data-scenario="overdue">48h 跟进超时 <span aria-hidden="true">↗</span></button>
+        <button class="text-button" type="button" data-scenario="refund">课后退款 <span aria-hidden="true">↗</span></button>
+      </div>
+    </section>
+    <section id="tour" class="presentation tour" aria-label="引导演示" hidden>
+      <div class="tour-heading">
+        <button class="text-button" id="tour-back" type="button"><span aria-hidden="true">←</span> 演示首页</button>
+        <span id="tour-scenario" class="label"></span>
+      </div>
+      <ol id="tour-phases" class="phases" aria-label="演示进度"></ol>
+      <div id="tour-stage"></div>
+      <p class="tour-note">模拟场景 · 随步骤切换角色。可随时回首页或打开工作台。</p>
+    </section>
+    <div id="announcement" class="sr-only" role="status"></div>
+    <div class="layout" id="workbench" hidden>
+      <aside class="sidebar">
+        <div class="nav-caption">切换角色</div>
+        <nav id="roles" aria-label="切换演示角色">
+          <button type="button" data-role="S" aria-current="true"><b>S</b><span>总部驾驶舱<small>派单与运营</small></span></button>
+          <button type="button" data-role="B"><b>B</b><span>合伙人工作台<small>跟进与交付</small></span></button>
+          <button type="button" data-role="C"><b>C</b><span>家长端<small>学习与课时款</small></span></button>
+        </nav>
+        <div class="sidebar-bottom">
+          <div class="nav-caption">演示环境</div>
+          <p><span class="status-dot"></span>本地模拟沙盒</p>
+          <small>竞赛原型 / 团队评审</small>
+        </div>
+      </aside>
+      <div class="work-main">
+        <header class="toolbar">
+          <div class="breadcrumb">竞赛 Demo <span aria-hidden="true">/</span> 技术工作区</div>
+          <div class="controls">
+            <label for="scenario">场景</label>
+            <select id="scenario">
+              <option value="standard">完整链路</option>
+              <option value="overdue">48h 跟进超时</option>
+              <option value="refund">课后退款</option>
+            </select>
+            <button class="button secondary" type="button" id="reset">重置</button>
+          </div>
+        </header>
+        <div class="workspace">
+          <section class="hero" aria-labelledby="role-title">
+            <div>
+              <p class="eyebrow"><span class="status-dot"></span><span id="role-kicker">S · HEADQUARTERS</span></p>
+              <h1 id="role-title" tabindex="-1">总部驾驶舱</h1>
+              <p id="role-description">从一条线索开始，看城市合伙人和家长的服务数据如何回到总部。</p>
+            </div>
+            <svg class="network" viewBox="0 0 360 128" aria-hidden="true">
+              <defs><pattern id="dotgrid" width="12" height="12" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="1" fill="#80aeaa" opacity=".29"/></pattern></defs>
+              <rect width="360" height="128" fill="url(#dotgrid)"/>
+              <path d="M78 68H179L282 68M282 80Q282 116 179 116T78 80" fill="none" stroke="#75d8b5" stroke-width="1.5" stroke-dasharray="4 5"/>
+              <path d="M130 65l4 3-4 3m106-6 4 3-4 3m-63 42-4 3 4 3" fill="none" stroke="#75d8b5" stroke-width="1.5"/>
+              <g transform="translate(78 68)"><circle r="25"/><text y="6">S</text><text class="node-label" y="-36">总部</text></g>
+              <g transform="translate(180 68)"><circle r="25"/><text y="6">B</text><text class="node-label" y="-36">合伙人</text></g>
+              <g transform="translate(282 68)"><circle r="25"/><text y="6">C</text><text class="node-label" y="-36">家长</text></g>
+            </svg>
+          </section>
+          <section class="guide" aria-label="下一步演示操作">
+            <div><span class="guide-index">演示引导</span><strong id="guide-text"></strong></div>
+            <button class="button secondary" type="button" id="jump" hidden></button>
+          </section>
+          <div class="work-grid">
+            <div id="role-content"></div>
+            <aside class="stream card" aria-labelledby="events-title">
+              <div class="section-head"><div><p class="kicker">EVENT STREAM</p><h2 id="events-title">跨端事件流</h2></div><span class="pill" id="event-count"></span></div>
+              <p class="muted stream-description">点击记录查看事件 ID、业务 ID 与字段。时钟为演示时间。</p>
+              <ol id="events" class="timeline"></ol>
+            </aside>
+          </div>
+          <footer>
+            <span>命题 3 · 说客英语 S2B2C 方案 · 团队评审 Demo</span>
+            <span>演示样本、固定 AI 输出与模拟账本</span>
+          </footer>
+        </div>
+      </div>
+    </div>
+  </main>
   <noscript>请启用 JavaScript 以运行三端演示。</noscript>
 </body>
 </html>
